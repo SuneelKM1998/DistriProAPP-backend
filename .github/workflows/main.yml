@@ -1,12 +1,12 @@
-name: Deploy Python App to Azure
+name: Deploy DistriPro API
 
 on:
   push:
     branches:
-      - main  # This triggers deployment every time you save code to GitHub
+      - main
 
 env:
-  AZURE_FUNCTIONAPP_NAME: 'DistriProAPI' 
+  AZURE_FUNCTIONAPP_NAME: 'DistriProAPI'
   PYTHON_VERSION: '3.11'
 
 jobs:
@@ -26,12 +26,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt --target=".python_packages"
 
-      - name: 'Zip artifact for deployment'
-        run: zip -r release.zip .
-
-      - name: 'Run Azure Functions Action'
+      - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          package: release.zip
+          package: .
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          # The secret sauce for Flex Consumption:
+          remote-build: true
