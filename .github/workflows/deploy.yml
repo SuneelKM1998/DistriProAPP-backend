@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # Allows you to run it manually if needed
-
-env:
-  AZURE_FUNCTIONAPP_NAME: 'DistriProAPI'
-  PYTHON_VERSION: '3.11'
 
 jobs:
   build-and-deploy:
@@ -17,20 +12,23 @@ jobs:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@v4
 
-      - name: Setup Python ${{ env.PYTHON_VERSION }}
+      - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: '3.11'
 
       - name: 'Install dependencies'
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt --target=".python_packages"
 
+      - name: 'Zip artifact for deployment'
+        run: zip -r release.zip .
+
       - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
         with:
-          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          package: .
+          app-name: 'DistriProAPI'
+          package: release.zip
+          # IMPORTANT: We are moving away from publish-profile
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
-          remote-build: true # Forces Azure to build the environment correctly
